@@ -80,17 +80,23 @@ The DESeq2 pipeline module is designed to be compatible with the larger project 
 
 project_root/
 │
-├── rna_seq_pipeline/                # DESeq2 Pipeline Integration
-│   ├── deseq2_pipeline.py           # DESeq2 interface module
+├── rna_seq_pipeline/                  # DESeq2 Pipeline Integration
+│   ├── deseq2_pipeline.py             # DESeq2 interface module
 │
-├── data/                            # Data directory
-│   ├── expression_data.csv          # Example expression count data
-│   └── sample_info.csv              # Example sample metadata
+├── data/                              # Data directory
+│   ├── expression_data.csv            # RNA-Seq count data (placeholder)
+│   └── sample_info.csv                # Sample metadata (placeholder)
 │
-├── ml_pipeline/                     # ML Modules for post-processing
-│   ├── process_deseq2_results.py    # Integrate DESeq2 results for ML tasks
+├── ml_pipeline/                       # ML Modules for post-processing
+│   ├── process_deseq2_results.py      # DESeq2 results processing for ML tasks
 │
-└── README.md                        # Project documentation
+├── tests/                             # Unit tests
+│   ├── test_deseq2_pipeline.py        # Tests for DESeq2 pipeline
+│   ├── test_process_deseq2_results.py # Tests for results processing
+│   └── conftest.py                    # Common configurations for tests
+├── mongo_setup.py                     # MongoDB setup module
+├── data_fetching.py                   # Fetch and load data functions
+└── README.md                          # Project documentation
 ```
 
 ## Key Benefits
@@ -98,6 +104,72 @@ project_root/
 - **Flexible Integration:** Can handle data directly from GEO or TCGA pipelines, making it compatible with existing genomic data workflows.
 - **Statistical Rigor:** DESeq2 is highly regarded for RNA-Seq analysis, offering reliable differential expression results based on robust statistical methods.
 - **Seamless Data Transfer:** rpy2 ensures data remains compatible across platforms, allowing efficient transfer between Python data pipelines and R statistical tools.
+
+Testing Setup
+`tests/test_deseq2_pipeline.py`
+
+Tests the DESeq2 pipeline functionality, including MongoDB integration.
+
+```python
+
+# tests/test_deseq2_pipeline.py
+
+import pytest
+import pandas as pd
+from rna_seq_pipeline.deseq2_pipeline import run_deseq2
+from pymongo import MongoClient
+
+# Test DESeq2 pipeline and MongoDB storage
+def test_run_deseq2():
+    sample_expression_data = pd.DataFrame({"Gene1": [100, 150], "Gene2": [200, 190]})
+    sample_metadata = pd.DataFrame({"condition": ["control", "treatment"]})
+    deseq2_results = run_deseq2(sample_expression_data, sample_metadata)
+    assert not deseq2_results.empty
+    client = MongoClient("mongodb://localhost:27017/")
+    db_result_count = client["rna_seq_data"]["deseq2_results"].count_documents({})
+    assert db_result_count > 0
+```
+
+`tests/test_process_deseq2_results.py`
+
+Tests filtering of DESeq2 results and saving filtered data.
+
+```python
+
+# tests/test_process_deseq2_results.py
+
+import pytest
+import pandas as pd
+from ml_pipeline.process_deseq2_results import filter_significant_genes, save_filtered_results_to_csv
+from pymongo import MongoClient
+
+# Test filtering and MongoDB storage of DESeq2 results
+def test_filter_significant_genes():
+    sample_deseq2_results = pd.DataFrame({"gene": ["Gene1", "Gene2"], "padj": [0.01, 0.03]})
+    significant_genes = filter_significant_genes(sample_deseq2_results)
+    assert len(significant_genes) == 2
+    client = MongoClient("mongodb://localhost:27017/")
+    assert client["rna_seq_data"]["filtered_deseq2_results"].count_documents({}) > 0
+```
+
+`conftest.py`
+
+Configures testing paths.
+
+```python
+
+# conftest.py
+
+import sys
+import os
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../rna_seq_pipeline')))
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../ml_pipeline')))
+```
+
+Explanation of Tests
+
+  - **test_deseq2_pipeline.py:** Ensures run_deseq2 performs DESeq2 analysis and stores results in MongoDB.
+  - **test_process_deseq2_results.py:** Verifies filter_significant_genes correctly filters and stores results.
 
 This pipeline is released as part of Phase 1.5, following foundational implementations in Phase 1.0 and adding enhanced genomic data processing capabilities alongside other chemical and genomic data tools.
 
