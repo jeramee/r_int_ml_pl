@@ -1,10 +1,32 @@
 # tests/test_deseq2_pipeline.py
 
+import os
+import sys
 import pytest
 import pandas as pd
 from unittest.mock import patch
-from rna_seq_pipeline.deseq2_pipeline import run_deseq2
 from pymongo import MongoClient
+
+# Add the parent directory of 'ml_pipeline' to the path
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../')))
+
+# Set environment variables
+os.environ["PATH"] += r";C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\bin"
+os.environ["PATH"] += r";C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\bin\x64"
+os.environ["R_HOME"] = r"C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R"
+os.environ["R_LIBS_USER"] = r"C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\library"
+os.environ["LD_LIBRARY_PATH"] = r"C:\Users\jeram\miniconda3\envs\myenv_py38\lib\R\lib"
+
+# Disable R's bytecode compilation for this session
+os.environ["R_COMPILE_PKGS"] = "0"
+
+try:
+    import rpy2.robjects as ro
+    ro.r('source("../gettext_override.R")')
+except Exception as e:
+    print(f"R initialization error: {e}")
+
+from rna_seq_pipeline.deseq2_pipeline import run_deseq2
 
 # Sample test data
 sample_expression_data = pd.DataFrame({

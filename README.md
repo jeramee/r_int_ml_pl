@@ -13,9 +13,103 @@ The DESeq2 pipeline leverages rpy2 to call R functions within Python, allowing u
 2. **DESeq2 Analysis**: Runs DESeq2 differential expression analysis using count and sample data provided in Python, returning significant genes and fold change values.
 3. **Results Integration**: Outputs DESeq2 results as a pandas DataFrame, ready for downstream Python-based ML pipelines, visualization, or additional bioinformatics processing.
 
+## Installation Instructions
+
+### 1. Create the Conda Environment
+
+Save the following YAML as `environment.yml`:
+
+```yaml
+name: r_integration_env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.8  # Specify Python version
+  - r-base=4.0.5
+  - rpy2=3.5.1  # Python-R interface
+  - numpy
+  - pandas=1.2.5  # Specify downgraded pandas version
+  - pymongo  # MongoDB integration for Python
+  - pytest  # Testing framework
+  - ipykernel  # For Jupyter kernel if needed
+  - h5py
+  - scikit-learn  # Machine learning, if needed
+  - matplotlib  # Visualization library
+  - lxml  # XML processing if needed
+  - pip
+  - pip:
+      - unittest
+      - unittest2
+      - mock
+      - parameterized  # For parameterized test cases
+  # Packages installed via R script:
+  # - r-deseq2
+  # - r-gettext
+  # - r-rcpp
+  # - r-rlang
+  # - r-parallelly
+  # - r-future
+  # - r-matrix
+  # - r-broom
+  # - r-dbplyr
+  # - r-knitr
+  # - r-recipes
+  # - r-googledrive
+  # - r-googlesheets4
+```
+
+To create and activate the environment, run the following commands:
+
+```bash
+conda env create -f environment.yml
+conda activate r_integration_env
+```
+
+### 2. Install R Packages Using an R Script
+
+Save the following R script as `install_r_packages.R`:
+
+```r
+if (!requireNamespace("BiocManager", quietly = TRUE))
+    install.packages("BiocManager")
+
+# Install DESeq2 via Bioconductor
+BiocManager::install("DESeq2")
+
+# Install other necessary packages from CRAN
+install.packages(c("Rcpp", "rlang", "parallelly", "future", "Matrix"))
+install.packages(c("broom", "dbplyr", "knitr", "gettext"))
+install.packages(c("recipes", "googledrive", "googlesheets4"))
+
+# Load the libraries to check if installed successfully
+library(DESeq2)
+library(Rcpp)
+library(rlang)
+library(parallelly)
+library(future)
+library(Matrix)
+print("All libraries loaded successfully.")
+```
+
+To install the R packages, run the following command:
+
+```bash
+Rscript install_r_packages.R
+```
+
+### 3. Verify Environment Setup
+
+Once everything is installed, verify by listing the installed packages in the Conda environment:
+
+```bash
+conda list
+```
+
 ## Implementation Steps
 
 ### 1. Load Data and Libraries
+
 - Use rpy2 to bridge Python and R, allowing DESeq2 functions to be called within the Python environment.
 - Activate `pandas2ri` for automatic conversion between pandas DataFrames (Python) and R DataFrames.
 
