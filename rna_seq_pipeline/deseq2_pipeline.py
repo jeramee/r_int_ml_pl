@@ -11,9 +11,12 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'
 # Set environment variables
 os.environ["PATH"] += r";C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\bin"
 os.environ["PATH"] += r";C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\bin\x64"
+os.environ["PATH"] += r";C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\lib"
+os.environ["PATH"] += r";C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\library"
 os.environ["R_HOME"] = r"C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R"
 os.environ["R_LIBS_USER"] = r"C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\library"
-os.environ["LD_LIBRARY_PATH"] = r"C:\Users\jeram\miniconda3\envs\myenv_py38\lib\R\lib"
+# Not used on Windows
+# os.environ["LD_LIBRARY_PATH"] = r"C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\lib"
 
 # Disable R's bytecode compilation for this session
 os.environ["R_COMPILE_PKGS"] = "0"
@@ -24,9 +27,7 @@ threading.stack_size(2 * 1024 * 1024)
 import rpy2.robjects as ro
 
 # Ensure gettext override is called first
-# ro.r('source("../gettext_override.R")')
-ro.r('source("D:/000_AI_Helper/000_Do_Informatics/Final_info_controller/InfoProj_CG_PTTD_CTS/flow-forge/pipeline_interface/r_int_ml_pl/gettext_override.R")')
-
+ro.r('source("gettext_override.R")')
 
 # Import rpy2 components after gettext override
 from rpy2.robjects import pandas2ri
@@ -93,14 +94,18 @@ def run_deseq2(expression_data, sample_info):
     ro.globalenv['expression_data'] = expression_data_r
     ro.globalenv['sample_info'] = sample_info_r
 
-    # Run DESeq2 analysis in R
-    ro.r('''
-    dds <- DESeqDataSetFromMatrix(countData = expression_data,
-                                  colData = sample_info,
-                                  design = ~ condition)
-    dds <- DESeq(dds)
-    res <- results(dds)
-    ''')
+    try:
+        # Run DESeq2 analysis
+        ro.r('''
+        dds <- DESeqDataSetFromMatrix(countData = expression_data,
+                                    colData = sample_info,
+                                    design = ~ condition)
+        dds <- DESeq(dds)
+        res <- results(dds)
+        ''')
+    except Exception as e:
+        print(f"Error during DESeq2 analysis: {e}")
+
 
     # Convert DESeq2 results to pandas DataFrame
     deseq2_results_r = ro.r('as.data.frame(res)')

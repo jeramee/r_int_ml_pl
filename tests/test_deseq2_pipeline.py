@@ -13,16 +13,19 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../'
 # Set environment variables
 os.environ["PATH"] += r";C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\bin"
 os.environ["PATH"] += r";C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\bin\x64"
+os.environ["PATH"] += r";C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\lib"
+os.environ["PATH"] += r";C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\library"
 os.environ["R_HOME"] = r"C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R"
 os.environ["R_LIBS_USER"] = r"C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\library"
-os.environ["LD_LIBRARY_PATH"] = r"C:\Users\jeram\miniconda3\envs\myenv_py38\lib\R\lib"
+# Not used on Windows
+# os.environ["LD_LIBRARY_PATH"] = r"C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\lib"
 
 # Disable R's bytecode compilation for this session
 os.environ["R_COMPILE_PKGS"] = "0"
 
 try:
     import rpy2.robjects as ro
-    ro.r('source("../gettext_override.R")')
+    ro.r('source("gettext_override.R")')
 except Exception as e:
     print(f"R initialization error: {e}")
 
@@ -58,4 +61,7 @@ def test_run_deseq2():
     assert db_result_count > 0  # Ensure results were inserted into MongoDB
 
     # Cleanup MongoDB after test
+    results_collection.delete_many({})
+
+def cleanup_database():
     results_collection.delete_many({})

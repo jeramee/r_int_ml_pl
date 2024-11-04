@@ -1,5 +1,6 @@
 # ml_pipeline/process_deseq2_results.py
 
+import os
 import pandas as pd
 
 def filter_significant_genes(deseq2_results, padj_threshold=0.05, log2fc_threshold=1):
@@ -17,6 +18,8 @@ def save_filtered_results(significant_genes, output_file):
     """
     Save filtered DESeq2 results to a CSV file.
     """
+    if os.path.exists(output_file):
+        print(f"Warning: {output_file} already exists and will be overwritten.")
     significant_genes.to_csv(output_file, index=False)
 
 # Example usage

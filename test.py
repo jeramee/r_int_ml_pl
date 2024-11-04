@@ -4,16 +4,22 @@ import os
 import subprocess
 
 # Set environment variables
+# Set environment variables for R paths directly in PATH
 os.environ["PATH"] += r";C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\bin"
 os.environ["PATH"] += r";C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\bin\x64"
+os.environ["PATH"] += r";C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\lib"
+os.environ["PATH"] += r";C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\library"
 os.environ["R_HOME"] = r"C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R"
 os.environ["R_LIBS_USER"] = r"C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\library"
-os.environ["LD_LIBRARY_PATH"] = r"C:\Users\jeram\miniconda3\envs\myenv_py38\lib\R\lib"
+# Not used on Windows
+# os.environ["LD_LIBRARY_PATH"] = r"C:\Users\jeram\miniconda3\envs\myenv_py38\Lib\R\lib"
 
+'''
 # Verify paths
 print("PATH:", os.environ["PATH"])
 print("R_HOME:", os.environ["R_HOME"])
 print("LD_LIBRARY_PATH:", os.environ.get("LD_LIBRARY_PATH"))
+'''
 
 # Import rpy2 after setting paths
 import rpy2.robjects as robjects
